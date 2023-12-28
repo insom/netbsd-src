@@ -110,8 +110,13 @@ struct meson_usbctrl_config mesong12_conf = {
 	.num_phys = 3
 };
 
+struct meson_usbctrl_config mesongxl_conf = {
+	.num_phys = 2
+};
+
 static const struct device_compatible_entry compat_data[] = {
 	{ .compat = "amlogic,meson-g12a-usb-ctrl", .data = &mesong12_conf },
+	{ .compat = "amlogic,meson-gxl-usb-ctrl", .data = &mesongxl_conf },
 	DEVICE_COMPAT_EOL
 };
 

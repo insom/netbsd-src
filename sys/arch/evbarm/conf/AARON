@@ -1,0 +1,213 @@
+include	"arch/evbarm/conf/std.generic64"
+include "arch/evbarm/conf/files.aaron"
+include	"arch/evbarm/conf/GENERIC.common"
+
+maxusers	64
+
+options DEBUG
+#options LOCKDEBUG
+
+options 	CPU_CORTEX
+options 	SOC_MESONG12
+options 	SOC_MESONGXBB
+options 	SOC_MESONGXL
+options 	MULTIPROCESSOR
+
+pseudo-device 	openfirm	# /dev/openfirm
+
+options 	VERBOSE_INIT_ARM # verbose bootstrapping messages
+options 	INCLUDE_CONFIG_FILE
+options 	HEARTBEAT
+options 	HEARTBEAT_MAX_PERIOD_DEFAULT=15
+
+#options 	EARLYCONS=meson, CONSADDR=0xc81004c0
+
+# The QEMU virt machine
+#options 	EARLYCONS=plcom, CONSADDR=0x09000000
+
+options 	ARMV81_HAFDBS
+options 	ARMV81_PAN
+
+options 	MIIVERBOSE	# verbose PHY autoconfig messages
+
+makeoptions	DEBUG="-g"	# compile full symbol table
+makeoptions	COPY_SYMTAB=1
+
+config		netbsd		root on ? type ?
+
+#options 	COMPAT_NETBSD32	# already defined in GENERIC.common (there
+options 	EXEC_ELF32	# for a.out, but here we need it for elf32)
+
+options 	EFI_RUNTIME
+pseudo-device	efi		# /dev/efi
+
+# Device tree support
+armfdt0 	at root
+simplebus*	at fdt? pass 0
+
+# ACPI support
+acpifdt*	at fdt? pass 1
+acpi*		at acpifdt?
+acpiacad*	at acpi?
+acpibat*	at acpi?
+acpibut*	at acpi?
+acpicppc*	at acpi?
+acpipcd*	at acpi?
+acpipcc*	at acpi?
+acpifan*	at acpi?
+acpiged*	at acpi?
+acpilid*	at acpi?
+acpitz* 	at acpi?
+
+#no umidi*
+
+# CPUs
+cpus*		at fdt? pass 0
+cpu*		at fdt? pass 0
+cpu*		at acpi?
+
+vmt*		at fdt?			# VMware Tools
+
+armpmu* 	at fdt?
+pseudo-device	tprof
+
+cpufreqdt*	at cpu?
+
+psci*		at fdt? pass 0
+
+fclock* 	at fdt? pass 1
+ffclock*	at fdt? pass 1
+fregulator*	at fdt? pass 4
+gregulator*	at fdt? pass 4
+pregulator*	at fdt? pass 4
+gpiokeys*	at fdt?
+wskbd*		at gpiokeys? console ? mux 1
+gpioleds*	at fdt?
+
+syscon* 	at fdt? pass 1		# Generic System Controller
+
+gtmr*		at fdt? pass 2		# ARM Generic Timer
+gtmr*		at acpi?
+armgtmr0	at gtmr?
+
+dwcwdt* 	at fdt?			# DesignWare watchdog
+dwcwdt*		at acpi?
+mesongxwdt*	at fdt?			# Amlogic Meson GX watchdog
+sbsawdt*	at acpi?		# ARM SBSA-compliant watchdog
+
+gic*		at fdt? pass 1		# ARM GICv2
+gic*		at acpi?
+armgic0 	at gic?
+gicvthree*	at fdt? pass 1		# ARM GICv3
+gicvthree*	at acpi?
+
+qemufwcfg*	at fdt?			# QEMU Firmware Configuration device
+qemufwcfg*	at acpi?
+
+# Clock and Reset controller
+g12aoclkc*	at fdt? pass 2		# Amlogic Meson G12 AO clock controller
+g12clkc*	at fdt? pass 2		# Amlogic Meson G12 EE clock controller
+gxbbaoclkc*	at fdt? pass 2		# Amlogic Meson GXBB AO clock controller
+gxbbclkc*	at fdt? pass 2		# Amlogic Meson GXBB/GXL EE clock controller
+mesonresets*	at fdt? pass 2		# Amlogic Meson misc. clock resets
+
+# GPIO controller
+mesonpinctrl*	at fdt? pass 2		# Amlogic Meson GPIO
+gpio*		at gpiobus?
+
+# PWM controller
+mesonpwm*	at fdt? pass 3		# Amlogic PWM
+
+# PCIE
+pcihost*	at fdt?			# Generic PCI host controller
+acpipchb*	at acpi?		# ACPI PCIe host bridge
+pci*		at pcibus?
+ppb*		at pci? dev ? function ?
+pci*		at ppb?
+
+# Ethernet
+awge*		at fdt?				# DesignWare Gigabit Ethernet
+
+# MII/PHY support
+gxlphy* 	at mii? phy ?		# Amlogic Meson GX internal PHY
+ukphy*		at mii? phy ?		# generic unknown PHYs
+
+# UART
+com*		at fdt?	pass 4			# UART
+com*		at acpi?
+mesonuart*	at fdt? pass 4			# Amlogic Meson UART
+plcom*		at fdt?	pass 4			# ARM PL011 UART
+plcom*		at acpi?
+
+# I2C controllers
+options 	I2C_MAX_ADDR=0xfff
+dwiic*		at fdt?			# Designware I2C
+dwiic*		at acpi?
+iicmux* 	at fdt? pass 5		# I2C mux virtual controllers
+iic*		at i2cbus?
+
+# I2C devices
+titemp* 	at iic?
+seeprom*	at iic?
+spdmem* 	at iic?			# memory module SPD EEPROM decoder
+as3722pmic*	at iic?
+as3722reg*	at as3722pmic?
+axppmic*	at iic?			# X-Powers AXP Power Management IC
+axpreg* 	at axppmic?
+cwfg*		at iic?			# CellWise CW2015 Fuel Gauge IC
+dsrtc*		at iic?			# Dallas Semiconductor RTCs
+es8316ac*	at iic?			# Everest Semi ES8316 Audio CODEC
+fan53555reg*	at iic?			# FAN53555 / SY82x regulator
+max77620pmic*	at iic?
+pcaiicmux*	at iic?			# PCA954x / PCA984x I2C switch / mux
+pcf8563rtc*	at iic?			# PCF8563 RTC
+rkpmic* 	at iic?			# Rockchip Power Management IC
+rkreg*		at rkpmic?
+tcagpio*	at iic?
+
+# Random number generators and security devices
+mesonrng*	at fdt?			# Amlogic Meson RNG
+tpm*		at acpi?		# Trusted Platform Module
+
+# RTC
+plrtc*		at fdt?			# ARM PrimeCell RTC
+
+# SDMMC
+dwcmmc*		at acpi?		# DesignWare SD/MMC
+dwcmmc* 	at fdt?
+mesongxmmc*	at fdt?			# Amlogic Meson GX eMMC/SD/SDIO controller
+mmcpwrseq*	at fdt? pass 5		# Simple MMC power sequence provider
+sdhc*		at fdt?			# SD Host Controller Interface
+sdhc*		at acpi?
+sdmmc*		at sdmmcbus?
+ld0		at sdmmc0
+ld1		at sdmmc1
+ld2		at sdmmc2
+ld3		at sdmmc3
+ld*		at sdmmc?
+
+mesonthermal*	at fdt?			# Amlogic thermal sensor controller
+
+mesonusbctrl*	at fdt?	pass 9		# Amlogic Meson USB-Glue (dwc2 and dwc3)
+mesonusbphy*	at fdt? pass 9		# Amlogic Meson USB2 PHY
+mesong12u2phy*	at fdt? pass 9		# Amlogic Meson G12 USB2 PHY
+mesong12u3pphy*	at fdt? pass 9		# Amlogic Meson G12 USB3/PCIe PHY
+mesongxlu2phy*	at fdt? pass 9		# Amlogic Meson GXL USB2 PHY
+mesongxlu3phy*	at fdt? pass 9		# Amlogic Meson GXL USB3 PHY
+dwctwo* 	at fdt?			# Designware USB DRD
+ehci*		at fdt?			# EHCI
+ehci*		at pci?			# EHCI
+ehci*		at acpi?		# EHCI
+ohci*		at fdt?			# OHCI
+ohci*		at pci?			# OHCI
+ohci*		at acpi?		# OHCI
+xhci*		at fdt?			# XHCI
+xhci*		at pci?			# XHCI
+xhci*		at acpi?		# XHCI
+usb*		at usbus?
+
+midi*		at midibus?
+
+include "dev/usb/usbdevices.config"
+
+cinclude	"arch/evbarm/conf/GENERIC64.local"

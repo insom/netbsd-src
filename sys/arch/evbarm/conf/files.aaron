@@ -1,0 +1,16 @@
+include "arch/arm/pic/files.pic"
+include "arch/arm/cortex/files.cortex"
+
+include "arch/evbarm/conf/files.fdt"
+
+# Add other board files here
+#
+include "arch/arm/acpi/files.acpi"
+include "arch/arm/amlogic/files.meson"
+#include "arch/arm/sociox/files.sociox"
+
+#
+# Stack-less Just-In-Time compiler
+#
+
+include	"external/bsd/sljit/conf/files.sljit"
